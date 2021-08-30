@@ -15,7 +15,7 @@ function PowerUp:init(type)
     self.type = type
 
     self.x = math.random(50 + 16, VIRTUAL_WIDTH - 50 - 16)
-    self.y = VIRTUAL_HEIGHT/2
+    self.y = 0
     self.width = 16
     self.height = 16
 

@@ -30,7 +30,7 @@ function PlayState:enter(params)
     self.level = params.level
 
     self.recoverPoints = 5000
-    self.paddleGrowPoints = 0
+    self.paddleGrowPoints = params.paddleGrowPoints
     
     -- there can only be 1 power up at a time
     self.powerUp = nil
@@ -146,10 +146,10 @@ function PlayState:update(dt)
                         gSounds['recover']:play()
                     end
 
-                    -- paddle will grow if accumulate points is more than threshold
-                    if self.paddleGrowPoints > PADDLE_GROW_THRESHOLD then
-                        self.paddle:changeSize(self:getPaddleSize(true))
-                        self.paddleGrowPoints = self.paddleGrowPoints % PADDLE_GROW_THRESHOLD
+                    -- paddle will grow if accumulated points is more than threshold, scale with level
+                    if self.paddleGrowPoints > (PADDLE_GROW_THRESHOLD * self.level) then
+                        self.paddle:updateSize(true)
+                        self.paddleGrowPoints = self.paddleGrowPoints % (PADDLE_GROW_THRESHOLD * self.level)
                     end
 
                     -- go to our victory screen if there are no more bricks left
@@ -227,7 +227,7 @@ function PlayState:update(dt)
             if next(self.balls) == nil then
                 self.health = self.health - 1
                 gSounds['hurt']:play()
-                self.paddle:changeSize(self:getPaddleSize(false))
+                self.paddle:updateSize(false)
 
                 if self.health == 0 then
                     gStateMachine:change('game-over', {
@@ -242,7 +242,8 @@ function PlayState:update(dt)
                         score = self.score,
                         highScores = self.highScores,
                         level = self.level,
-                        recoverPoints = self.recoverPoints
+                        recoverPoints = self.recoverPoints,
+                        paddleGrowPoints = self.paddleGrowPoints
                     })
                 end
             end
@@ -286,9 +287,8 @@ function PlayState:render()
     renderScore(self.score)
     renderHealth(self.health)
 
-    if self.PowerUp ~= nil then
-        love.graphics.printf(self.PowerUp, 0, VIRTUAL_HEIGHT / 2, VIRTUAL_WIDTH, 'left')
-    end
+    -- debug purpose
+    -- love.graphics.printf(tostring(self.paddleGrowPoints), 0, VIRTUAL_HEIGHT / 2, VIRTUAL_WIDTH, 'center')
 
     -- pause text, if paused
     if self.paused then
@@ -308,21 +308,4 @@ function PlayState:checkVictory()
     end
 
     return true
-end
-
---[[
-    Get paddle size base on the increasePaddle parameter
-]]
-function PlayState:getPaddleSize(increasePaddle)
-    if increasePaddle then
-        if self.paddle.size ~= 4 then
-            return self.paddle.size + 1
-        end
-    else
-        if self.paddle.size ~= 1 then
-            return self.paddle.size - 1
-        end
-    end
-
-    return self.paddle.size
 end

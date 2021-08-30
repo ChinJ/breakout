@@ -86,8 +86,32 @@ function Paddle:changeSize(sz)
     elseif sz == 2 then
         self.width = 64
     elseif sz == 3 then
-        self.width =  96
+        self.width = 96
     else
         self.width = 128
     end
+end
+
+--[[
+    Get paddle size base on the increasePaddle parameter
+]]
+function Paddle:getPaddleSize(increasePaddle)
+    if increasePaddle then
+        if self.size < 4 then
+            return self.size + 1
+        end
+    else
+        if self.size > 1 then
+            return self.size - 1
+        end
+    end
+
+    return self.size
+end
+
+--[[
+    Increase/decrease paddle size, 1 size at a time
+]]
+function Paddle:updateSize(increaseSize)
+    self:changeSize(self:getPaddleSize(increaseSize))
 end
