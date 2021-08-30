@@ -30,6 +30,7 @@ function PlayState:enter(params)
     self.level = params.level
 
     self.recoverPoints = 5000
+    self.paddleGrowPoints = 0
     
     -- there can only be 1 power up at a time
     self.powerUp = nil
@@ -61,8 +62,8 @@ function PlayState:update(dt)
     self.timer = self.timer + dt
     if self.timer > puSpawnTimer then
         if self.powerUp == nil then
-            local min = 8
-            local max = 8
+            local min = 9
+            local max = 9
             local type = math.random(min, max)
             self.powerUp = PowerUp(type)
             
@@ -78,8 +79,10 @@ function PlayState:update(dt)
 
         -- remove powerup if collides with paddle or cross the lower window boundary
         if self.powerUp:collides(self.paddle) then
-            table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
-            table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
+            if self.powerUp.type == 9 then
+                table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
+                table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
+            end
             deletePowerUp = true
         end
 
@@ -126,6 +129,7 @@ function PlayState:update(dt)
 
                     -- add to score
                     self.score = self.score + (brick.tier * 200 + brick.color * 25)
+                    self.paddleGrowPoints = self.paddleGrowPoints + (brick.tier * 200 + brick.color * 25)
 
                     -- trigger the brick's hit function, which removes it from play
                     brick:hit()
@@ -140,6 +144,12 @@ function PlayState:update(dt)
 
                         -- play recover sound effect
                         gSounds['recover']:play()
+                    end
+
+                    -- paddle will grow if accumulate points is more than threshold
+                    if self.paddleGrowPoints > PADDLE_GROW_THRESHOLD then
+                        self.paddle:changeSize(self:getPaddleSize(true))
+                        self.paddleGrowPoints = self.paddleGrowPoints % PADDLE_GROW_THRESHOLD
                     end
 
                     -- go to our victory screen if there are no more bricks left
@@ -217,6 +227,7 @@ function PlayState:update(dt)
             if next(self.balls) == nil then
                 self.health = self.health - 1
                 gSounds['hurt']:play()
+                self.paddle:changeSize(self:getPaddleSize(false))
 
                 if self.health == 0 then
                     gStateMachine:change('game-over', {
@@ -286,6 +297,9 @@ function PlayState:render()
     end
 end
 
+--[[
+    check if player has won - victory achieve when no more bricks in play
+]]
 function PlayState:checkVictory()
     for k, brick in pairs(self.bricks) do
         if brick.inPlay then
@@ -294,4 +308,21 @@ function PlayState:checkVictory()
     end
 
     return true
+end
+
+--[[
+    Get paddle size base on the increasePaddle parameter
+]]
+function PlayState:getPaddleSize(increasePaddle)
+    if increasePaddle then
+        if self.paddle.size ~= 4 then
+            return self.paddle.size + 1
+        end
+    else
+        if self.paddle.size ~= 1 then
+            return self.paddle.size - 1
+        end
+    end
+
+    return self.paddle.size
 end

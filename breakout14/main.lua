@@ -67,7 +67,7 @@ function love.load()
         ['balls'] = GenerateQuadsBalls(gTextures['main']),
         ['bricks'] = GenerateQuadsBricks(gTextures['main']),
         ['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9),
-        ['powerUps'] = GeneratePowerUps(gTextures['main'])
+        ['powerUps'] = GenerateQuadPowerUps(gTextures['main'])
     }
     
     -- initialize our virtual resolution, which will be rendered within our

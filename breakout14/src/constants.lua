@@ -20,3 +20,6 @@ VIRTUAL_HEIGHT = 243
 
 -- paddle movement speed
 PADDLE_SPEED = 200
+
+-- paddle grow threshold which is 750 points
+PADDLE_GROW_THRESHOLD = 750

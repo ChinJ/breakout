@@ -130,13 +130,13 @@ end
     This function is specifically made to split out the power ups
     from the sprite sheet.
 ]]
-function GeneratePowerUps(atlas)
+function GenerateQuadPowerUps(atlas)
     local x = 0
     local y = 192
 
     local powerUps = {}
 
-    for i = 0, 9 do
+    for i = 1, 10 do
         powerUps[i] = love.graphics.newQuad(x, y, 16, 16, atlas:getDimensions())
         x = x + 16
     end
