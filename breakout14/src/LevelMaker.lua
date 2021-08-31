@@ -47,8 +47,18 @@ function LevelMaker.createMap(level)
     -- highest color of the highest tier, no higher than 5
     local highestColor = math.min(5, level % 5 + 3)
 
+    -- the color and tier of a locked brick, always the same
+    local lockedColor = 6
+    local lockedTier = 1
+
+    -- maximum of locked bricks per level, scale with level
+    local maxLockedBrickNum = math.min(math.floor(level / 2) * 2, numRows * 3)
+    -- current number of locked bricks in a level, to ensure not exceed maxLockedBrickNum
+    local currLockedBrickNum = 0
+
     -- lay out bricks such that they touch each other and fill the space
     for y = 1, numRows do
+
         -- whether we want to enable skipping for this row
         local skipPattern = math.random(1, 2) == 1 and true or false
 
@@ -95,21 +105,28 @@ function LevelMaker.createMap(level)
                 y * 16                  -- just use y * 16, since we need top padding anyway
             )
 
+            -- 10% rate of spawning a locked brick
+            local spawnLockedBrick = false
+            if currLockedBrickNum < maxLockedBrickNum then
+                spawnLockedBrick = math.random(1, 10) == 10 and true or false
+                currLockedBrickNum = currLockedBrickNum + 1
+            end
+
             -- if we're alternating, figure out which color/tier we're on
             if alternatePattern and alternateFlag then
-                b.color = alternateColor1
-                b.tier = alternateTier1
+                b.color = spawnLockedBrick and lockedColor or alternateColor1
+                b.tier = spawnLockedBrick and lockedTier or alternateTier1
                 alternateFlag = not alternateFlag
             else
-                b.color = alternateColor2
-                b.tier = alternateTier2
+                b.color = spawnLockedBrick and lockedColor or alternateColor2
+                b.tier = spawnLockedBrick and lockedTier or alternateTier2
                 alternateFlag = not alternateFlag
             end
 
             -- if not alternating and we made it here, use the solid color/tier
             if not alternatePattern then
-                b.color = solidColor
-                b.tier = solidTier
+                b.color = spawnLockedBrick and lockedColor or solidColor
+                b.tier = spawnLockedBrick and lockedTier or solidTier
             end 
 
             table.insert(bricks, b)

@@ -113,5 +113,13 @@ end
     Increase/decrease paddle size, 1 size at a time
 ]]
 function Paddle:updateSize(increaseSize)
-    self:changeSize(self:getPaddleSize(increaseSize))
+    local oldSize = self.size
+    local newSize = self:getPaddleSize(increaseSize) 
+    if oldSize ~= newSize then
+        if increaseSize then 
+            gSounds['paddle-grow']:play()
+        end
+    end
+
+    self:changeSize(newSize)
 end

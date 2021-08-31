@@ -35,7 +35,11 @@ function PlayState:enter(params)
     -- there can only be 1 power up at a time
     self.powerUp = nil
     self.timer = 0
-    puSpawnTimer = math.random(10, 15)
+    self.powerUpTimer = math.random(10, 15)
+    
+    -- locked bricks related
+    self.hasLockedBricks = self:hasLockedBricks() -- store it to avoid loop multiple times
+    self.hasKey = false
 end
 
 function PlayState:update(dt)
@@ -60,10 +64,10 @@ function PlayState:update(dt)
 
     -- spawn power up after certain time if no powerup exists
     self.timer = self.timer + dt
-    if self.timer > puSpawnTimer then
+    if self.timer > self.powerUpTimer then
         if self.powerUp == nil then
-            local min = 9
-            local max = 9
+            local min = self:onlyLockedBricksLeft() and 10 or 9
+            local max = self.hasLockedBricks and 10 or 9
             local type = math.random(min, max)
             self.powerUp = PowerUp(type)
             
@@ -76,12 +80,17 @@ function PlayState:update(dt)
         self.powerUp:update(dt)
 
         local deletePowerUp = false
-
-        -- remove powerup if collides with paddle or cross the lower window boundary
         if self.powerUp:collides(self.paddle) then
             if self.powerUp.type == 9 then
+                gSounds['powerup-balls']:stop()
+                gSounds['powerup-balls']:play()
                 table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
                 table.insert(self.balls, Ball(self.balls[1].skin, self.balls[1].x, self.balls[1].y))
+            elseif self.powerUp.type == 10 then
+                gSounds['powerup-key']:stop()
+                gSounds['powerup-key']:play()
+                self.hasKey = true
+                self.hasLockedBricks = false
             end
             deletePowerUp = true
         end
@@ -90,6 +99,7 @@ function PlayState:update(dt)
             deletePowerUp = true
         end
 
+        -- remove powerup if collides with paddle or cross the lower window boundary
         if deletePowerUp then
             self.powerUp = nil
         end
@@ -124,12 +134,16 @@ function PlayState:update(dt)
 
         -- only check collision if we're in play
         if brick.inPlay then
+            if brick:isLockedBrick() and self.hasKey then
+                brick:unlockBrick()
+            end
+
             for k, ball in pairs(self.balls) do
                 if ball:collides(brick) then
 
                     -- add to score
-                    self.score = self.score + (brick.tier * 200 + brick.color * 25)
-                    self.paddleGrowPoints = self.paddleGrowPoints + (brick.tier * 200 + brick.color * 25)
+                    self.score = self.score + brick:score()--(brick.tier * 200 + brick.color * 25)
+                    self.paddleGrowPoints = self.paddleGrowPoints + brick:score()--(brick.tier * 200 + brick.color * 25)
 
                     -- trigger the brick's hit function, which removes it from play
                     brick:hit()
@@ -284,6 +298,10 @@ function PlayState:render()
         self.powerUp:render() 
     end
 
+    if self.hasKey then
+        love.graphics.draw(gTextures['key'], gFrames['key'][1], VIRTUAL_WIDTH - 100 - 17, 6)
+    end
+
     renderScore(self.score)
     renderHealth(self.health)
 
@@ -305,6 +323,32 @@ function PlayState:checkVictory()
         if brick.inPlay then
             return false
         end 
+    end
+
+    return true
+end
+
+--[[
+    Check if current level has any locked bricks
+]]
+function PlayState:hasLockedBricks()
+    for k, brick in pairs(self.bricks) do
+        if brick.inPlay and brick:isLockedBrick() then
+            return true
+        end
+    end
+
+    return false
+end
+
+--[[
+    Check if only locked bricks are left
+]]
+function PlayState:onlyLockedBricksLeft()
+    for k, brick in pairs(self.bricks) do
+        if brick.inPlay and brick:isLockedBrick() == false then
+            return false
+        end
     end
 
     return true

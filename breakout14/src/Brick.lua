@@ -47,6 +47,12 @@ paletteColors = {
         ['r'] = 251,
         ['g'] = 242,
         ['b'] = 54
+    },
+    -- black, may not be accurate as the rgb was picked using eyedropper in paint3D
+    [6] = {
+        ['r'] = 89,
+        ['g'] = 86,
+        ['b'] = 82
     }
 }
 
@@ -85,6 +91,13 @@ end
     changing its color otherwise.
 ]]
 function Brick:hit()
+    -- locked brick is unbreakable
+    if self:isLockedBrick() then
+        gSounds['brick-hit-3']:stop()
+        gSounds['brick-hit-3']:play()  
+        return
+    end
+
     -- set the particle system to interpolate between two colors; in this case, we give
     -- it our self.color but with varying alpha; brighter for higher tiers, fading to 0
     -- over the particle's lifetime (the second color)
@@ -149,4 +162,29 @@ end
 ]]
 function Brick:renderParticles()
     love.graphics.draw(self.psystem, self.x + 16, self.y + 8)
+end
+
+--[[
+    Score of a brick
+]]
+function Brick:score()
+    -- locked brick has no score
+    if self:isLockedBrick() then return 0 end
+    return self.tier * 200 + (self.color == 6 and 4000 or self.color * 25)
+end
+
+--[[
+    Check if a brick is locked
+]]
+function Brick:isLockedBrick()
+    return self.color == 6 and self.tier == 1
+end
+
+--[[
+    Unlock a brick, check if it's a locked brick again.
+]]
+function Brick:unlockBrick()
+    if self:isLockedBrick() then
+        self.tier = self.tier - 1
+    end
 end

@@ -56,7 +56,8 @@ function love.load()
         ['main'] = love.graphics.newImage('graphics/breakout.png'),
         ['arrows'] = love.graphics.newImage('graphics/arrows.png'),
         ['hearts'] = love.graphics.newImage('graphics/hearts.png'),
-        ['particle'] = love.graphics.newImage('graphics/particle.png')
+        ['particle'] = love.graphics.newImage('graphics/particle.png'),
+        ['key'] = love.graphics.newImage('graphics/key.png')
     }
 
     -- Quads we will generate for all of our textures; Quads allow us
@@ -67,7 +68,8 @@ function love.load()
         ['balls'] = GenerateQuadsBalls(gTextures['main']),
         ['bricks'] = GenerateQuadsBricks(gTextures['main']),
         ['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9),
-        ['powerUps'] = GenerateQuadPowerUps(gTextures['main'])
+        ['powerUps'] = GenerateQuadPowerUps(gTextures['main']),
+        ['key'] = GenerateQuads(gTextures['key'], 10, 5)
     }
     
     -- initialize our virtual resolution, which will be rendered within our
@@ -82,6 +84,8 @@ function love.load()
     -- call each entry's `play` method
     gSounds = {
         ['paddle-hit'] = love.audio.newSource('sounds/paddle_hit.wav', 'static'),
+        ['paddle-grow'] = love.audio.newSource('sounds/paddle_grow.wav', 'static'),
+        ['paddle-shrink'] = love.audio.newSource('sounds/paddle_shrink.wav', 'static'),
         ['score'] = love.audio.newSource('sounds/score.wav', 'static'),
         ['wall-hit'] = love.audio.newSource('sounds/wall_hit.wav', 'static'),
         ['confirm'] = love.audio.newSource('sounds/confirm.wav', 'static'),
@@ -89,6 +93,9 @@ function love.load()
         ['no-select'] = love.audio.newSource('sounds/no-select.wav', 'static'),
         ['brick-hit-1'] = love.audio.newSource('sounds/brick-hit-1.wav', 'static'),
         ['brick-hit-2'] = love.audio.newSource('sounds/brick-hit-2.wav', 'static'),
+        ['brick-hit-3'] = love.audio.newSource('sounds/brick-hit-3.wav', 'static'),
+        ['powerup-balls'] = love.audio.newSource('sounds/powerup-balls.wav', 'static'),
+        ['powerup-key'] = love.audio.newSource('sounds/powerup-key.wav', 'static'),
         ['hurt'] = love.audio.newSource('sounds/hurt.wav', 'static'),
         ['victory'] = love.audio.newSource('sounds/victory.wav', 'static'),
         ['recover'] = love.audio.newSource('sounds/recover.wav', 'static'),
